@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import sql from "@/lib/db";
 import { resolveTicker } from "@/lib/polygon";
+
+const pk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+const clerkEnabled =
+  (pk.startsWith("pk_live_") || pk.startsWith("pk_test_")) &&
+  pk !== "pk_test_replace_me";
+
+async function getClerkId(): Promise<string | null> {
+  if (!clerkEnabled) return null;
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const { userId } = await auth();
+    return userId;
+  } catch {
+    return null;
+  }
+}
 
 const SYSTEM_PROMPT = `You are a financial analyst. When given a market domain, return exactly 3 stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
 {
@@ -71,8 +86,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "domain is required" }, { status: 400 });
   }
 
-  // get clerk user if logged in (non-blocking)
-  const { userId: clerkId } = await auth();
+  // get clerk user if logged in (non-blocking, no-op if Clerk not configured)
+  const clerkId = await getClerkId();
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",

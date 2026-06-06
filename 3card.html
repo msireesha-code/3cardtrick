@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3S Stock Finder</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+        background: #f5f7fb;
+        padding: 40px;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+        color: #222;
+    }
+
+    .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    input {
+        flex: 1;
+        padding: 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    button {
+        background: #1f6feb;
+        color: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background: #0d58d1;
+    }
+
+    .result {
+        display: none;
+    }
+
+    .domain-title {
+        margin-bottom: 20px;
+        color: #1f2937;
+    }
+
+    .stock-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .stock-name {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #111827;
+    }
+
+    .section {
+        margin-top: 10px;
+    }
+
+    .label {
+        font-weight: bold;
+        color: #374151;
+    }
+
+    .allocation {
+        background: #ecfdf5;
+        border: 1px solid #10b981;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .not-found {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        padding: 15px;
+        border-radius: 8px;
+        color: #856404;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>3S Stock Finder</h1>
+    <div class="subtitle">
+        Enter a domain (e.g. icecream, AI, sports, defense, EV)
+    </div>
+
+    <div class="search-box">
+        <input id="domainInput" placeholder="Enter domain..." />
+        <button onclick="run3S()">Run 3S</button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+</div>
+
+<script>
+
+const stockDatabase = {
+
+    icecream: {
+        title: "Ice Cream Industry",
+        stocks: [
+            {
+                name: "Vadilal Industries",
+                why: "Pure-play ice cream company with growing domestic and international presence.",
+                risks: "Seasonal demand and milk price volatility.",
+                investor: "Growth Investor"
+            },
+            {
+                name: "Hatsun Agro Product",
+                why: "Owner of Arun Ice Cream and strong dairy distribution network.",
+                risks: "Premium valuation and dairy margin pressure.",
+                investor: "Moderate Growth"
+            },
+            {
+                name: "Kwality Wall's India",
+                why: "Strong consumer brands and nationwide reach.",
+                risks: "Recently listed and potentially volatile.",
+                investor: "Aggressive Growth"
+            }
+        ],
+        allocation: [
+            ["Vadilal Industries", "40%"],
+            ["Hatsun Agro", "35%"],
+            ["Kwality Wall's", "25%"]
+        ]
+    },
+
+    ai: {
+        title: "Artificial Intelligence",
+        stocks: [
+            {
+                name: "NVIDIA",
+                why: "Dominates AI chips and infrastructure.",
+                risks: "High valuation.",
+                investor: "Growth"
+            },
+            {
+                name: "Microsoft",
+                why: "Leader in enterprise AI and cloud.",
+                risks: "Competition from hyperscalers.",
+                investor: "Core Holding"
+            },
+            {
+                name: "Alphabet",
+                why: "Strong AI research and ecosystem.",
+                risks: "Regulatory scrutiny.",
+                investor: "Long-Term Growth"
+            }
+        ],
+        allocation: [
+            ["NVIDIA", "40%"],
+            ["Microsoft", "35%"],
+            ["Alphabet", "25%"]
+        ]
+    },
+
+    sports: {
+        title: "Sports Industry",
+        stocks: [
+            {
+                name: "Nike",
+                why: "Global sports apparel leader.",
+                risks: "Consumer spending slowdown.",
+                investor: "Core Holding"
+            },
+            {
+                name: "Adidas",
+                why: "Strong global sports brand.",
+                risks: "Competitive market.",
+                investor: "Growth"
+            },
+            {
+                name: "DraftKings",
+                why: "Sports betting growth story.",
+                risks: "High volatility.",
+                investor: "Aggressive"
+            }
+        ],
+        allocation: [
+            ["Nike", "40%"],
+            ["Adidas", "35%"],
+            ["DraftKings", "25%"]
+        ]
+    },
+
+    defense: {
+        title: "Defense Industry",
+        stocks: [
+            {
+                name: "HAL",
+                why: "India's premier aerospace manufacturer.",
+                risks: "Government dependency.",
+                investor: "Growth"
+            },
+            {
+                name: "Bharat Electronics",
+                why: "Strong defense electronics pipeline.",
+                risks: "Execution delays.",
+                investor: "Core Holding"
+            },
+            {
+                name: "Data Patterns",
+                why: "Emerging defense technology company.",
+                risks: "Smaller company risk.",
+                investor: "Aggressive"
+            }
+        ],
+        allocation: [
+            ["HAL", "40%"],
+            ["BEL", "35%"],
+            ["Data Patterns", "25%"]
+        ]
+    },
+
+    ev: {
+        title: "Electric Vehicles",
+        stocks: [
+            {
+                name: "Tesla",
+                why: "Global EV leader.",
+                risks: "Competition and valuation.",
+                investor: "Growth"
+            },
+            {
+                name: "BYD",
+                why: "Fast-growing EV giant.",
+                risks: "China-specific risks.",
+                investor: "Growth"
+            },
+            {
+                name: "Tata Motors",
+                why: "Leading EV player in India.",
+                risks: "Auto-cycle sensitivity.",
+                investor: "Balanced Growth"
+            }
+        ],
+        allocation: [
+            ["Tesla", "40%"],
+            ["BYD", "35%"],
+            ["Tata Motors", "25%"]
+        ]
+    }
+
+};
+
+function run3S() {
+
+    const input = document
+        .getElementById("domainInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const resultDiv = document.getElementById("result");
+
+    resultDiv.style.display = "block";
+
+    if (!stockDatabase[input]) {
+
+        resultDiv.innerHTML = `
+            <div class="not-found">
+                No predefined 3S data found for "<b>${input}</b>".
+                <br><br>
+                Add the domain to stockDatabase in the JavaScript section.
+            </div>
+        `;
+        return;
+    }
+
+    const data = stockDatabase[input];
+
+    let html = `
+        <h2 class="domain-title">3S Report: ${data.title}</h2>
+    `;
+
+    data.stocks.forEach((stock, index) => {
+
+        html += `
+        <div class="stock-card">
+
+            <div class="stock-name">
+                #${index + 1} ${stock.name}
+            </div>
+
+            <div class="section">
+                <span class="label">Why:</span>
+                ${stock.why}
+            </div>
+
+            <div class="section">
+                <span class="label">Risks:</span>
+                ${stock.risks}
+            </div>
+
+            <div class="section">
+                <span class="label">Investor Type:</span>
+                ${stock.investor}
+            </div>
+
+        </div>
+        `;
+    });
+
+    html += `
+        <div class="allocation">
+            <h3>Suggested Allocation</h3>
+            <br>
+            ${data.allocation.map(a =>
+                `<div>${a[0]} : <b>${a[1]}</b></div>`
+            ).join("")}
+        </div>
+    `;
+
+    resultDiv.innerHTML = html;
+}
+
+document
+    .getElementById("domainInput")
+    .addEventListener("keypress", function(e){
+        if(e.key === "Enter"){
+            run3S();
+        }
+    });
+
+</script>
+
+</body>
+</html>

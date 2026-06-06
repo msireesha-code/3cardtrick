@@ -1,34 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { stockDatabase, DomainData } from "@/lib/stockData";
+import { DomainData } from "@/lib/stockData";
 import StockCard from "./StockCard";
 import AllocationBar from "./AllocationBar";
 
-const SUGGESTED_DOMAINS = ["AI", "EV", "Defense", "Pharma", "Fintech", "Sports", "Icecream"];
+const SUGGESTED_DOMAINS = [
+  "AI", "EV", "Defense", "Pharma", "Fintech",
+  "Sports", "Icecream", "Renewable Energy", "Semiconductors",
+];
 
 export default function StockFinder() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<DomainData | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState("");
 
-  function search(domain: string) {
-    const key = domain.trim().toLowerCase();
-    const data = stockDatabase[key];
-    if (data) {
-      setResult(data);
-      setNotFound(false);
-    } else {
-      setResult(null);
-      setNotFound(true);
+  async function search(domain: string) {
+    const trimmed = domain.trim();
+    if (!trimmed) return;
+
+    setLoading(true);
+    setResult(null);
+    setError(null);
+    setSearched(trimmed);
+
+    try {
+      const res = await fetch("/api/stocks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: trimmed }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Something went wrong.");
+      } else {
+        setResult(data);
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setSearched(domain.trim());
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (input.trim()) search(input);
+    search(input);
   }
 
   return (
@@ -38,13 +59,13 @@ export default function StockFinder() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 text-blue-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-white/20">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-            Scan · Select · Size
+            Scan · Select · Size — Powered by AI
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
             3S Stock Finder
           </h1>
           <p className="text-slate-300 text-lg max-w-xl mx-auto">
-            Enter any market domain and get the top 3 stocks with a smart allocation strategy.
+            Enter any market domain and get the top 3 stocks with a smart allocation strategy — generated live by AI.
           </p>
         </div>
       </div>
@@ -59,14 +80,24 @@ export default function StockFinder() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter domain (e.g. AI, EV, defense, fintech...)"
+            placeholder="Enter any domain (e.g. AI, EV, biotech, luxury goods...)"
             className="flex-1 px-4 py-3 text-slate-800 text-base outline-none bg-transparent placeholder:text-slate-400"
+            disabled={loading}
           />
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold px-6 py-3 rounded-xl transition-all text-sm"
+            disabled={loading || !input.trim()}
+            className="bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-xl transition-all text-sm flex items-center gap-2"
           >
-            Run 3S
+            {loading ? (
+              <>
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Thinking...
+              </>
+            ) : "Run 3S"}
           </button>
         </form>
 
@@ -75,11 +106,9 @@ export default function StockFinder() {
           {SUGGESTED_DOMAINS.map((d) => (
             <button
               key={d}
-              onClick={() => {
-                setInput(d);
-                search(d);
-              }}
-              className="text-xs font-medium bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+              onClick={() => { setInput(d); search(d); }}
+              disabled={loading}
+              className="text-xs font-medium bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors disabled:opacity-40"
             >
               {d}
             </button>
@@ -89,23 +118,36 @@ export default function StockFinder() {
 
       {/* Results */}
       <div className="max-w-3xl mx-auto px-6 py-12">
-        {notFound && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800 text-center">
-            <p className="text-lg font-semibold mb-1">No data found for &ldquo;{searched}&rdquo;</p>
-            <p className="text-sm text-amber-600">
-              Try one of the suggested domains above, or check back later as we add more sectors.
-            </p>
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="space-y-4 animate-pulse">
+            <div className="h-8 bg-slate-200 rounded-lg w-64" />
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
+                <div className="h-5 bg-slate-200 rounded w-48 mb-3" />
+                <div className="h-4 bg-slate-100 rounded w-full mb-2" />
+                <div className="h-4 bg-slate-100 rounded w-3/4" />
+              </div>
+            ))}
+            <div className="bg-slate-800 rounded-2xl p-6 h-40" />
           </div>
         )}
 
-        {result && (
-          <div className="space-y-6 animate-fadeIn">
+        {/* Error */}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-red-800 text-center">
+            <p className="text-lg font-semibold mb-1">Error</p>
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        {/* Results */}
+        {result && !loading && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-800">
-                {result.title}
-              </h2>
+              <h2 className="text-2xl font-bold text-slate-800">{result.title}</h2>
               <span className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                3S Report
+                3S Report · {searched}
               </span>
             </div>
 
@@ -119,11 +161,12 @@ export default function StockFinder() {
           </div>
         )}
 
-        {!result && !notFound && (
+        {/* Empty state */}
+        {!result && !error && !loading && (
           <div className="text-center text-slate-400 py-16">
             <div className="text-6xl mb-4">📊</div>
-            <p className="text-lg font-medium text-slate-500">Enter a domain above to get started</p>
-            <p className="text-sm mt-2">Try domains like AI, EV, defense, pharma, or fintech</p>
+            <p className="text-lg font-medium text-slate-500">Enter any domain to get AI-powered stock picks</p>
+            <p className="text-sm mt-2">Works for any sector — not just the presets above</p>
           </div>
         )}
       </div>

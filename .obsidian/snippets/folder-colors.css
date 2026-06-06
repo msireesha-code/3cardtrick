@@ -1,0 +1,84 @@
+/* ============================================================
+   3S Stock Finder — Vault Folder Color Coding
+   Nord palette from PLN theme
+   ============================================================ */
+
+/* ── Top-level sections ──────────────────────────────────── */
+
+.nav-folder-title[data-path="build"] .nav-folder-title-content { color: #88c0d0; font-weight: 700; }
+.nav-folder-title[data-path="raw"]   .nav-folder-title-content { color: #8fbcbb; font-weight: 600; }
+.nav-folder-title[data-path="wiki"]  .nav-folder-title-content { color: #81a1c1; font-weight: 600; }
+.nav-folder-title[data-path="_templates"] .nav-folder-title-content { color: #4C566A; font-style: italic; }
+
+/* ── Phase 1 — Blue  (#5e81ac) — Data & Auth Foundation ─── */
+
+.nav-folder-title[data-path="build/P1 - Data & Auth Foundation"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P1 - Data & Auth Foundation/Authentication"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P1 - Data & Auth Foundation/Database Schema Design"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P1 - Data & Auth Foundation/Real Market Data Pipeline"] .nav-folder-title-content {
+  color: #5e81ac;
+}
+.nav-folder-title[data-path="build/P1 - Data & Auth Foundation"] .nav-folder-title-content {
+  font-weight: 700;
+}
+
+/* ── Phase 2 — Purple (#b48ead) — Core Intelligence ─────── */
+
+.nav-folder-title[data-path="build/P2 - Core Intelligence"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P2 - Core Intelligence/Backtesting Engine"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P2 - Core Intelligence/Proprietary Scoring Model"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P2 - Core Intelligence/RAG over Earnings Transcripts"] .nav-folder-title-content {
+  color: #b48ead;
+}
+.nav-folder-title[data-path="build/P2 - Core Intelligence"] .nav-folder-title-content {
+  font-weight: 700;
+}
+
+/* ── Phase 3 — Green (#a3be8c) — User Value & Retention ─── */
+
+.nav-folder-title[data-path="build/P3 - User Value & Retention"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P3 - User Value & Retention/Portfolio Tracker"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P3 - User Value & Retention/Watchlist & Price Alerts"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P3 - User Value & Retention/Search History"] .nav-folder-title-content {
+  color: #a3be8c;
+}
+.nav-folder-title[data-path="build/P3 - User Value & Retention"] .nav-folder-title-content {
+  font-weight: 700;
+}
+
+/* ── Phase 4 — Orange (#d08770) — Growth & Virality ─────── */
+
+.nav-folder-title[data-path="build/P4 - Growth & Virality"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P4 - Growth & Virality/Shareable Report Cards"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P4 - Growth & Virality/Trending Leaderboard"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P4 - Growth & Virality/Weekly Email Digest"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P4 - Growth & Virality/Embeddable Widget"] .nav-folder-title-content {
+  color: #d08770;
+}
+.nav-folder-title[data-path="build/P4 - Growth & Virality"] .nav-folder-title-content {
+  font-weight: 700;
+}
+
+/* ── Phase 5 — Yellow (#ebcb8b) — Monetization ──────────── */
+
+.nav-folder-title[data-path="build/P5 - Monetization"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P5 - Monetization/Stripe Integration"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P5 - Monetization/Freemium Gating"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P5 - Monetization/Team API Access"] .nav-folder-title-content {
+  color: #ebcb8b;
+}
+.nav-folder-title[data-path="build/P5 - Monetization"] .nav-folder-title-content {
+  font-weight: 700;
+}
+
+/* ── Phase 6 — Red (#bf616a) — Trust, Scale & Moat ─────── */
+
+.nav-folder-title[data-path="build/P6 - Trust, Scale & Moat"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P6 - Trust, Scale & Moat/Compliance Layer"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P6 - Trust, Scale & Moat/Analytics & Feedback Loop"] .nav-folder-title-content,
+.nav-folder-title[data-path="build/P6 - Trust, Scale & Moat/Performance & SEO"] .nav-folder-title-content {
+  color: #bf616a;
+}
+.nav-folder-title[data-path="build/P6 - Trust, Scale & Moat"] .nav-folder-title-content {
+  font-weight: 700;
+}

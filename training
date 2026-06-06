@@ -1,0 +1,120 @@
+- Local Ai: google AI studio & install gemma4 2b model
+
+- 3 card trick
+
+@<>.html is a idea of a application front end because it is an inline html, css an js wrapper. It gives results based on a input filed. Create a next js and tailwind rich applicaton and built it verify it and commit and pust to git, which is connected to vercel so it will auto deploy
+
+	https://3cardtrick.vercel.app/
+	
+	
+
+- Create Neon DB from Storage
+
+Neon db
+
+
+# Recommended for most uses
+DATABASE_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require
+
+# For uses requiring a connection without pgbouncer
+DATABASE_URL_UNPOOLED=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+# Parameters for constructing your own connection string
+PGHOST=ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech
+PGHOST_UNPOOLED=ep-muddy-tooth-apr5swea.c-7.us-east-1.aws.neon.tech
+PGUSER=neondb_owner
+PGDATABASE=neondb
+PGPASSWORD=npg_z7ULIlY6ksxq
+
+# Parameters for Vercel Postgres Templates
+POSTGRES_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require
+POSTGRES_URL_NON_POOLING=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea.c-7.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require
+POSTGRES_USER=neondb_owner
+POSTGRES_HOST=ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech
+POSTGRES_PASSWORD=npg_z7ULIlY6ksxq
+POSTGRES_DATABASE=neondb
+POSTGRES_URL_NO_SSL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech/neondb
+POSTGRES_PRISMA_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech/neondb?channel_binding=require&connect_timeout=15&sslmode=require
+ 
+ 
+ 
+ 
+ 
+ Go to claude and run the below command
+ The following is my DB url please verify the connection
+ psql "postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-apr5swea-pooler.c-7.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+ 
+ 
+ 
+ - what are all the features needed  to make this app a Y combinator app
+ 
+ - Create a phase wise plan to build all thes features. prioritize high complexity features first followed simple features
+ 
+ - based on the phase wise plan above, create a nested list of tasks and store it in our database in a table call version1. We will implement the feature and update the progress in the DB
+ 
+ 
+ - create a page called progress where I can see the build progress, what tasks, what dependencies, what relations. use nice charts and guages from recharts library
+ 	- this will create a progress page for the tasks in vercel
+ 
+ 
+ 
+ 
+ 
+ ------------------------------------
+ 
+ https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
+ 
+- install obsidian from app center
+	https://obsidian.md/
+	
+	
+- ontology - schema of things where we decide who is your entity and who 
+- knowledge -- connect everything in a single map
+
+
+- obsidia
+	- setting -> community plugin -> Browser and install the following
+		- Templator
+		- DataViewer
+		- Terminal
+ 
+ 	- Setting -> Appearance -> themes -> PLN
+ 	
+ 
+ 
+ 
+ In claude code :
+  this folder has obisidian valut in it.The template to create color coded folders are also in it. We will use this vault memory as reference instead of session memory. Please refer to https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f and create folders for our phase wise implementation plan [Enter]
+  
+- Go to Obisidian --> open graph view to see graphs.
+
+- When you open new claude session later, instruct it
+" this has obsidian vault in it. go and read the map and tell me where we are"
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ==========================
+ obsidian
+ 	ontology
+ 	knowledge graph
+ 	
+ - claude sub cli
+ 
+- https://pi.dev/
+	
+	export PATH="/home/sireesha/.local/share/pi-node/node-v22.22.3-linux-x64/bin:$PATH"
+	/login
+	API key -> open router -> enter openrouter key
+	
+	/model -->> change the model. be fault pi used kimik2.5, we can change it with model command
+
+entertainment
+-  suno.com
+ 

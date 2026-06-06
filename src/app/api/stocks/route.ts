@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import sql from "@/lib/db";
 import { resolveTicker } from "@/lib/polygon";
-
-const pk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-const clerkEnabled =
-  (pk.startsWith("pk_live_") || pk.startsWith("pk_test_")) &&
-  pk !== "pk_test_replace_me";
-
-async function getClerkId(): Promise<string | null> {
-  if (!clerkEnabled) return null;
-  try {
-    const { auth } = await import("@clerk/nextjs/server");
-    const { userId } = await auth();
-    return userId;
-  } catch {
-    return null;
-  }
-}
+import { getStackUserId } from "@/lib/stack";
 
 const SYSTEM_PROMPT = `You are a financial analyst. When given a market domain, return exactly 3 stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
 {
@@ -37,10 +22,19 @@ const SYSTEM_PROMPT = `You are a financial analyst. When given a market domain, 
 }
 Allocations must sum to 100%. Rank stocks from strongest to most speculative.`;
 
-async function resolveUserId(clerkId: string | null): Promise<number | null> {
-  if (!clerkId) return null;
-  const rows = await sql`SELECT id FROM users WHERE clerk_id = ${clerkId} LIMIT 1`;
-  return rows[0]?.id ?? null;
+async function resolveDbUserId(stackId: string | null): Promise<number | null> {
+  if (!stackId) return null;
+  try {
+    // upsert user on first search so we don't need a webhook
+    const rows = await sql`
+      INSERT INTO users (stack_id) VALUES (${stackId})
+      ON CONFLICT (stack_id) DO UPDATE SET updated_at = NOW()
+      RETURNING id
+    `;
+    return rows[0]?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function persistSearch(
@@ -65,7 +59,6 @@ async function persistSearch(
       `;
     }
   } catch (err) {
-    // non-fatal — don't fail the request if persistence fails
     console.error("Failed to persist search:", err);
   }
 }
@@ -86,8 +79,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "domain is required" }, { status: 400 });
   }
 
-  // get clerk user if logged in (non-blocking, no-op if Clerk not configured)
-  const clerkId = await getClerkId();
+  const stackId = await getStackUserId();
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -118,8 +110,7 @@ export async function POST(req: NextRequest) {
   try {
     const parsed = JSON.parse(content);
 
-    // persist in background — don't await, never blocks the response
-    const userId = await resolveUserId(clerkId);
+    const userId = await resolveDbUserId(stackId);
     persistSearch(domain, userId, parsed.stocks ?? [], parsed.allocation ?? []);
 
     return NextResponse.json(parsed);

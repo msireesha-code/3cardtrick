@@ -1,9 +1,6 @@
-import { SignUp } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
+// Stack Auth sign-up lives at /handler/sign-up
 export default function SignUpPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-      <SignUp />
-    </div>
-  );
+  redirect("/handler/sign-up");
 }

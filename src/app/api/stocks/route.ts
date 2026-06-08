@@ -4,18 +4,19 @@ import { resolveTicker } from "@/lib/polygon";
 import { getStackUserId } from "@/lib/stack";
 import { retrieveChunks } from "@/lib/edgar";
 
-const SYSTEM_PROMPT = `You are a senior equity analyst. When given a market domain, return exactly 3 stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
+const SYSTEM_PROMPT = `You are a senior SEBI-registered equity analyst focused exclusively on the Indian stock market (NSE and BSE listed companies). When given a market domain or sector, return exactly 3 Indian stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
 {
-  "title": "string (e.g. 'Artificial Intelligence Industry')",
+  "title": "string (e.g. 'Indian Artificial Intelligence Sector')",
   "stocks": [
     {
-      "name": "string (company name)",
-      "why": "string (2-3 sentences on the investment thesis)",
-      "risks": "string (2-3 sentences on key risks)",
+      "name": "string (Indian company name, NSE/BSE listed)",
+      "ticker": "string (NSE ticker symbol, e.g. INFY, TCS, RELIANCE)",
+      "why": "string (2-3 sentences on the investment thesis — India-specific: domestic growth, govt policy tailwinds, promoter quality, etc.)",
+      "risks": "string (2-3 sentences on key risks — India-specific: SEBI scrutiny, FII flows, rupee risk, etc.)",
       "investor": "string (one of: Core Holding, Growth, Moderate Growth, Aggressive Growth, Aggressive, Balanced Growth, Long-Term Growth)",
-      "confidence": number (0-100, your conviction score based on fundamentals, momentum, and risk/reward),
+      "confidence": number (0-100, conviction score based on fundamentals, promoter holding, ROE, debt levels, and sector tailwinds),
       "timeHorizon": "string (one of: Short (1-2yr), Medium (3-5yr), Long (5yr+))",
-      "catalysts": ["string", "string", "string"] (exactly 3 near-term catalysts that could re-rate the stock)
+      "catalysts": ["string", "string", "string"] (exactly 3 near-term catalysts — earnings, govt orders, capex cycle, index inclusion, etc.)
     }
   ],
   "allocation": [
@@ -24,7 +25,7 @@ const SYSTEM_PROMPT = `You are a senior equity analyst. When given a market doma
     ["Stock Name", "XX%"]
   ]
 }
-Allocations must sum to 100%. Rank stocks from strongest to most speculative. Confidence scores should reflect true conviction — avoid clustering around 70.`;
+Only recommend NSE/BSE listed Indian companies. Allocations must sum to 100%. Rank from highest to lowest conviction. Confidence scores should reflect true conviction — avoid clustering around 70.`;
 
 async function callLLM(apiKey: string, model: string, messages: { role: string; content: string }[]) {
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {

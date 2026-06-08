@@ -6,8 +6,9 @@ import StockCard from "./StockCard";
 import AllocationBar from "./AllocationBar";
 
 const SUGGESTED_DOMAINS = [
-  "AI", "EV", "Defense", "Pharma", "Fintech",
-  "Sports", "Icecream", "Renewable Energy", "Semiconductors",
+  "Defense", "Pharma", "Fintech", "EV",
+  "Renewable Energy", "PSU Banks", "IT Services",
+  "FMCG", "Infrastructure", "Textiles",
 ];
 
 export default function StockFinder() {
@@ -59,13 +60,13 @@ export default function StockFinder() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 text-blue-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-white/20">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-            Scan · Select · Size — Powered by AI
+            NSE · BSE · Powered by AI
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
             3S Stock Finder
           </h1>
           <p className="text-slate-300 text-lg max-w-xl mx-auto">
-            Enter any market domain and get the top 3 stocks with a smart allocation strategy — generated live by AI.
+            Enter any Indian market sector and get the top 3 NSE/BSE stocks with smart allocation — generated live by AI.
           </p>
         </div>
       </div>
@@ -80,7 +81,7 @@ export default function StockFinder() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter any domain (e.g. AI, EV, biotech, luxury goods...)"
+            placeholder="Enter any sector (e.g. Defense, Pharma, PSU Banks, Green Energy...)"
             className="flex-1 px-4 py-3 text-slate-800 text-base outline-none bg-transparent placeholder:text-slate-400"
             disabled={loading}
           />
@@ -173,8 +174,8 @@ export default function StockFinder() {
         {!result && !error && !loading && (
           <div className="text-center text-slate-400 py-16">
             <div className="text-6xl mb-4">📊</div>
-            <p className="text-lg font-medium text-slate-500">Enter any domain to get AI-powered stock picks</p>
-            <p className="text-sm mt-2">Works for any sector — not just the presets above</p>
+            <p className="text-lg font-medium text-slate-500">Enter any Indian market sector to get AI-powered NSE/BSE picks</p>
+            <p className="text-sm mt-2">Works for any sector — defence, pharma, banks, infra, and more</p>
           </div>
         )}
       </div>

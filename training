@@ -56,6 +56,9 @@ POSTGRES_PRISMA_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-ap
  - create a page called progress where I can see the build progress, what tasks, what dependencies, what relations. use nice charts and guages from recharts library
  	- this will create a progress page for the tasks in vercel
  
+- implent and build the phase1
+
+- verify the build, commit and push
  
  
  
@@ -93,7 +96,12 @@ POSTGRES_PRISMA_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-ap
 
 
  
+ ===============
  
+ 
+ https://status.claude.com/
+ 
+ https://console.neon.tech/app/projects/icy-rain-73607744?branchId=br-ancient-firefly-apbfbouo&database=neondb
  
  
  
@@ -117,4 +125,10 @@ POSTGRES_PRISMA_URL=postgresql://neondb_owner:npg_z7ULIlY6ksxq@ep-muddy-tooth-ap
 
 entertainment
 -  suno.com
+
+
+- napkin.ai
  
+ - claude.ai/design
+	-design system
+ 	refer to this url use the purple and whites as the major themes along with company logo and generate a design system

@@ -17,6 +17,10 @@ export default function StockFinder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState("");
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem("3s_recent") ?? "[]"); } catch { return []; }
+  });
 
   async function search(domain: string) {
     const trimmed = domain.trim();
@@ -26,6 +30,13 @@ export default function StockFinder() {
     setResult(null);
     setError(null);
     setSearched(trimmed);
+
+    // persist recent searches in localStorage
+    setRecentSearches((prev) => {
+      const next = [trimmed, ...prev.filter((s) => s !== trimmed)].slice(0, 6);
+      try { localStorage.setItem("3s_recent", JSON.stringify(next)); } catch {}
+      return next;
+    });
 
     try {
       const res = await fetch("/api/stocks", {
@@ -71,6 +82,10 @@ export default function StockFinder() {
             <a href="/progress" className="text-blue-300 hover:text-white transition-colors">Progress</a>
             <span className="text-slate-600">·</span>
             <a href="/backtest" className="text-blue-300 hover:text-white transition-colors">Backtest</a>
+            <span className="text-slate-600">·</span>
+            <a href="/portfolio" className="text-blue-300 hover:text-white transition-colors">Portfolio</a>
+            <span className="text-slate-600">·</span>
+            <a href="/watchlist" className="text-blue-300 hover:text-white transition-colors">Watchlist</a>
           </div>
           <p className="text-slate-300 text-lg max-w-xl mx-auto">
             Enter any Indian market sector and get the top 3 NSE/BSE stocks with smart allocation — generated live by AI.
@@ -109,7 +124,7 @@ export default function StockFinder() {
           </button>
         </form>
 
-        {/* Chips */}
+        {/* Suggested sectors */}
         <div className="flex flex-wrap gap-2 mt-4 justify-center">
           {SUGGESTED_DOMAINS.map((d) => (
             <button
@@ -122,6 +137,23 @@ export default function StockFinder() {
             </button>
           ))}
         </div>
+
+        {/* Recent searches */}
+        {recentSearches.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3 justify-center items-center">
+            <span className="text-xs text-slate-400 font-medium">Recent:</span>
+            {recentSearches.map((d) => (
+              <button
+                key={d}
+                onClick={() => { setInput(d); search(d); }}
+                disabled={loading}
+                className="text-xs font-medium bg-indigo-50 border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors disabled:opacity-40"
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Results */}

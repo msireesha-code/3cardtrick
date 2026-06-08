@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Stock, investorTypeColors } from "@/lib/stockData";
 
 interface StockCardProps {
@@ -28,6 +29,34 @@ export default function StockCard({ stock, index }: StockCardProps) {
   const confStyle = conf !== null ? confidenceColor(conf) : null;
   const f = stock.fundamentals;
   const s = stock.sentiment;
+  const [watching, setWatching] = useState(false);
+  const [inPortfolio, setInPortfolio] = useState(false);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+
+  async function toggleWatch() {
+    if (!stock.ticker) return;
+    const res = await fetch("/api/watchlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticker: stock.ticker, stockName: stock.name }),
+    });
+    const data = await res.json();
+    setWatching(data.watching);
+    setActionMsg(data.watching ? "Added to watchlist" : "Removed from watchlist");
+    setTimeout(() => setActionMsg(null), 2000);
+  }
+
+  async function addToPortfolio() {
+    if (!stock.ticker) return;
+    await fetch("/api/portfolio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticker: stock.ticker, stockName: stock.name, entryPrice: f?.currentPrice }),
+    });
+    setInPortfolio(true);
+    setActionMsg("Added to portfolio");
+    setTimeout(() => setActionMsg(null), 2000);
+  }
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-shadow duration-300">
@@ -170,6 +199,37 @@ export default function StockCard({ stock, index }: StockCardProps) {
               </div>
             );
           })()}
+        </div>
+      )}
+      {/* Action buttons */}
+      {stock.ticker && (
+        <div className="border-t border-slate-100 pt-3 mt-3 flex items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <button
+              onClick={toggleWatch}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-all ${
+                watching
+                  ? "bg-amber-50 text-amber-600 border-amber-200"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-amber-300 hover:text-amber-500"
+              }`}
+            >
+              {watching ? "★ Watching" : "☆ Watch"}
+            </button>
+            <button
+              onClick={addToPortfolio}
+              disabled={inPortfolio}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium transition-all ${
+                inPortfolio
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300 hover:text-emerald-600"
+              }`}
+            >
+              {inPortfolio ? "✓ In Portfolio" : "+ Portfolio"}
+            </button>
+          </div>
+          {actionMsg && (
+            <span className="text-xs text-indigo-600 font-medium animate-pulse">{actionMsg}</span>
+          )}
         </div>
       )}
     </div>

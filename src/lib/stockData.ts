@@ -8,13 +8,14 @@ export interface Stock {
   timeHorizon?: string;
   catalysts?: string[];
   fundamentals?: {
-    marketCap: string | null;
-    pe: string | null;
+    currentPrice: number | null;
+    dayChange: number | null;
     week52High: number | null;
     week52Low: number | null;
     sector: string | null;
-    currentPrice: number | null;
-    dayChange: number | null;
+    industry: string | null;
+    dayHigh: number | null;
+    dayLow: number | null;
   } | null;
   sentiment?: {
     score: number;

@@ -124,28 +124,30 @@ export default function StockCard({ stock, index }: StockCardProps) {
       )}
 
       {/* Fundamentals */}
-      {f && (f.marketCap || f.pe || f.week52High) && (
+      {f && (f.week52High || f.dayHigh || f.sector) && (
         <div className="border-t border-slate-100 pt-3 mt-3">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Fundamentals</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Market Data</p>
           <div className="grid grid-cols-3 gap-2">
-            {f.marketCap && (
-              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
-                <p className="text-xs text-slate-400">Mkt Cap</p>
-                <p className="text-xs font-bold text-slate-700">{f.marketCap}</p>
-              </div>
-            )}
-            {f.pe && (
-              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
-                <p className="text-xs text-slate-400">P/E</p>
-                <p className="text-xs font-bold text-slate-700">{f.pe}x</p>
-              </div>
-            )}
             {f.week52High && f.week52Low && (
               <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
                 <p className="text-xs text-slate-400">52W Range</p>
                 <p className="text-xs font-bold text-slate-700">
-                  {f.week52Low.toFixed(0)}–{f.week52High.toFixed(0)}
+                  ₹{f.week52Low.toFixed(0)}–{f.week52High.toFixed(0)}
                 </p>
+              </div>
+            )}
+            {f.dayHigh && f.dayLow && (
+              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
+                <p className="text-xs text-slate-400">Day Range</p>
+                <p className="text-xs font-bold text-slate-700">
+                  ₹{f.dayLow.toFixed(0)}–{f.dayHigh.toFixed(0)}
+                </p>
+              </div>
+            )}
+            {f.sector && (
+              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
+                <p className="text-xs text-slate-400">Sector</p>
+                <p className="text-xs font-bold text-slate-700 truncate">{f.sector}</p>
               </div>
             )}
           </div>

@@ -1,18 +1,8 @@
-import { Suspense } from "react";
 import BacktestDashboard from "@/components/backtest/BacktestDashboard";
-import type { BacktestResult } from "@/app/api/backtest/route";
+import { runBacktest } from "@/lib/backtest";
 import Link from "next/link";
 
-async function fetchBacktest(days: number): Promise<BacktestResult> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/backtest?days=${days}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("Failed to load backtest data");
-  return res.json();
-}
+export const dynamic = "force-dynamic";
 
 export default async function BacktestPage({
   searchParams,
@@ -21,19 +11,29 @@ export default async function BacktestPage({
 }) {
   const params = await searchParams;
   const days = parseInt(params.days ?? "90");
-  const data = await fetchBacktest(days);
+
+  let data;
+  try {
+    data = await runBacktest(days);
+  } catch {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center text-slate-500">
+          <p className="text-lg font-semibold">Failed to load backtest data</p>
+          <p className="text-sm mt-1">Check server logs for details</p>
+        </div>
+      </div>
+    );
+  }
 
   const dayOptions = [30, 60, 90, 180];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white py-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <Link href="/" className="text-blue-300 hover:text-white text-sm transition-colors">
-              ← Home
-            </Link>
+            <Link href="/" className="text-blue-300 hover:text-white text-sm transition-colors">← Home</Link>
             <span className="text-slate-600">/</span>
             <span className="text-sm text-slate-300">Backtest</span>
           </div>
@@ -43,7 +43,6 @@ export default async function BacktestPage({
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Day filter */}
         <div className="flex items-center gap-2 mb-8">
           <span className="text-sm font-medium text-slate-500">Show last:</span>
           {dayOptions.map((d) => (
@@ -61,9 +60,7 @@ export default async function BacktestPage({
           ))}
         </div>
 
-        <Suspense fallback={<div className="text-slate-400 text-center py-20">Loading backtest...</div>}>
-          <BacktestDashboard data={data} />
-        </Suspense>
+        <BacktestDashboard data={data} />
       </div>
     </div>
   );

@@ -1,86 +1,88 @@
-// Fetch fundamentals and news from Yahoo Finance — no API key needed
+// Yahoo Finance — free endpoints only (v8 chart + search)
+// v10 quoteSummary requires auth since 2025, use v8 chart meta instead
 
-const YF = "https://query1.finance.yahoo.com";
+const YF1 = "https://query1.finance.yahoo.com";
+const YF2 = "https://query2.finance.yahoo.com";
 
 export interface Fundamentals {
-  marketCap: string | null;
-  pe: string | null;
+  currentPrice: number | null;
+  dayChange: number | null;     // % vs previous close
   week52High: number | null;
   week52Low: number | null;
   sector: string | null;
-  currentPrice: number | null;
-  dayChange: number | null;        // % change today
+  industry: string | null;
+  dayHigh: number | null;
+  dayLow: number | null;
 }
 
 export interface NewsItem {
   title: string;
   publisher: string;
   link: string;
-  published: string;
 }
 
+// Use v8 chart meta — only free endpoint that returns price + 52w range
 export async function getFundamentals(ticker: string): Promise<Fundamentals> {
   try {
-    const res = await fetch(
-      `${YF}/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=summaryDetail,price,assetProfile`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) return emptyFundamentals();
-    const data = await res.json();
-    const result = data.quoteSummary?.result?.[0];
-    if (!result) return emptyFundamentals();
+    const [chartRes, searchRes] = await Promise.all([
+      fetch(`${YF2}/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`, {
+        next: { revalidate: 900 },
+      }),
+      fetch(`${YF1}/v1/finance/search?q=${encodeURIComponent(ticker)}&quotesCount=1&newsCount=0`, {
+        next: { revalidate: 3600 },
+      }),
+    ]);
 
-    const summary = result.summaryDetail ?? {};
-    const price   = result.price ?? {};
-    const profile = result.assetProfile ?? {};
+    const chartData = chartRes.ok ? await chartRes.json() : null;
+    const searchData = searchRes.ok ? await searchRes.json() : null;
 
-    const mcRaw = price.marketCap?.raw as number | undefined;
-    const marketCap = mcRaw
-      ? mcRaw >= 1e12 ? `₹${(mcRaw / 1e12).toFixed(1)}T`
-      : mcRaw >= 1e9  ? `₹${(mcRaw / 1e9).toFixed(0)}B`
-      : `₹${(mcRaw / 1e6).toFixed(0)}M`
-      : null;
+    const meta = chartData?.chart?.result?.[0]?.meta ?? {};
+    const searchQuote = searchData?.quotes?.[0] ?? {};
 
-    const pe = summary.trailingPE?.raw
-      ? String(summary.trailingPE.raw.toFixed(1))
-      : null;
+    const current: number | null = meta.regularMarketPrice ?? null;
+    const prevClose: number | null = meta.chartPreviousClose ?? null;
+    const dayChange =
+      current !== null && prevClose !== null && prevClose !== 0
+        ? parseFloat((((current - prevClose) / prevClose) * 100).toFixed(2))
+        : null;
 
     return {
-      marketCap,
-      pe,
-      week52High: summary.fiftyTwoWeekHigh?.raw ?? null,
-      week52Low:  summary.fiftyTwoWeekLow?.raw ?? null,
-      sector:     profile.sector ?? null,
-      currentPrice: price.regularMarketPrice?.raw ?? null,
-      dayChange:    price.regularMarketChangePercent?.raw != null
-        ? parseFloat((price.regularMarketChangePercent.raw * 100).toFixed(2))
-        : null,
+      currentPrice: current,
+      dayChange,
+      week52High:  meta.fiftyTwoWeekHigh ?? null,
+      week52Low:   meta.fiftyTwoWeekLow ?? null,
+      dayHigh:     meta.regularMarketDayHigh ?? null,
+      dayLow:      meta.regularMarketDayLow ?? null,
+      sector:      searchQuote.sector ?? null,
+      industry:    searchQuote.industry ?? null,
     };
   } catch {
-    return emptyFundamentals();
+    return { currentPrice: null, dayChange: null, week52High: null, week52Low: null, sector: null, industry: null, dayHigh: null, dayLow: null };
   }
 }
 
-function emptyFundamentals(): Fundamentals {
-  return { marketCap: null, pe: null, week52High: null, week52Low: null, sector: null, currentPrice: null, dayChange: null };
-}
-
-export async function getNews(ticker: string, count = 5): Promise<NewsItem[]> {
+// Google News RSS — returns India-relevant headlines
+export async function getNews(query: string, count = 5): Promise<NewsItem[]> {
   try {
+    const q = encodeURIComponent(`${query} NSE BSE stock`);
     const res = await fetch(
-      `${YF}/v1/finance/search?q=${encodeURIComponent(ticker)}&newsCount=${count}&quotesCount=0`,
+      `https://news.google.com/rss/search?q=${q}&hl=en-IN&gl=IN&ceid=IN:en`,
       { next: { revalidate: 1800 } }
     );
     if (!res.ok) return [];
-    const data = await res.json();
-    const news: { title: string; publisher: string; link: string; providerPublishTime: number }[] =
-      data.news ?? [];
-    return news.slice(0, count).map((n) => ({
-      title:     n.title,
-      publisher: n.publisher,
-      link:      n.link,
-      published: new Date(n.providerPublishTime * 1000).toISOString().split("T")[0],
-    }));
+    const xml = await res.text();
+
+    const items: NewsItem[] = [];
+    const regex = /<item>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<source[^>]*>(.*?)<\/source>[\s\S]*?<\/item>/g;
+    let match;
+    while ((match = regex.exec(xml)) !== null && items.length < count) {
+      items.push({
+        title:     match[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim(),
+        link:      match[2].trim(),
+        publisher: match[3].replace(/<!\[CDATA\[|\]\]>/g, "").trim(),
+      });
+    }
+    return items;
   } catch {
     return [];
   }
@@ -92,7 +94,7 @@ export async function getNewsSentiment(
   apiKey: string,
   model: string
 ): Promise<{ score: number; label: "Bullish" | "Neutral" | "Bearish"; summary: string }> {
-  const news = await getNews(ticker, 6);
+  const news = await getNews(stockName, 5);
   if (news.length === 0) return { score: 50, label: "Neutral", summary: "No recent news found." };
 
   const headlines = news.map((n) => `- ${n.title} (${n.publisher})`).join("\n");
@@ -112,7 +114,7 @@ export async function getNewsSentiment(
         messages: [
           {
             role: "system",
-            content: `You are a news sentiment analyst. Given recent news headlines about an Indian stock, return JSON with: {"score": number 0-100 (0=very bearish, 50=neutral, 100=very bullish), "label": "Bullish"|"Neutral"|"Bearish", "summary": "one sentence summarising sentiment"}`,
+            content: `You are a financial news sentiment analyst for Indian markets. Given recent news headlines about an Indian stock, return JSON: {"score": number 0-100 (0=very bearish,50=neutral,100=very bullish), "label": "Bullish"|"Neutral"|"Bearish", "summary": "one sentence"}`,
           },
           {
             role: "user",
@@ -125,8 +127,8 @@ export async function getNewsSentiment(
     const data = await res.json();
     const parsed = JSON.parse(data.choices?.[0]?.message?.content ?? "{}");
     return {
-      score:   parsed.score ?? 50,
-      label:   parsed.label ?? "Neutral",
+      score:   typeof parsed.score === "number" ? parsed.score : 50,
+      label:   ["Bullish", "Neutral", "Bearish"].includes(parsed.label) ? parsed.label : "Neutral",
       summary: parsed.summary ?? "",
     };
   } catch {

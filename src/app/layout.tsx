@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { stackEnabled, stackServerApp } from "@/lib/stack";
+import TopNav from "@/components/TopNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,10 @@ export default async function RootLayout({
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col">
           <StackProvider app={stackServerApp}>
-            <StackTheme>{children}</StackTheme>
+            <StackTheme>
+              <TopNav />
+              {children}
+            </StackTheme>
           </StackProvider>
         </body>
       </html>
@@ -36,7 +40,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TopNav />
+        {children}
+      </body>
     </html>
   );
 }

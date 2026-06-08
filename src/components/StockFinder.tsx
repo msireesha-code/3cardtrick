@@ -78,15 +78,6 @@ export default function StockFinder() {
               3S Stock Finder
             </h1>
           </div>
-          <div className="flex justify-center gap-3 mb-4 text-sm">
-            <a href="/progress" className="text-blue-300 hover:text-white transition-colors">Progress</a>
-            <span className="text-slate-600">·</span>
-            <a href="/backtest" className="text-blue-300 hover:text-white transition-colors">Backtest</a>
-            <span className="text-slate-600">·</span>
-            <a href="/portfolio" className="text-blue-300 hover:text-white transition-colors">Portfolio</a>
-            <span className="text-slate-600">·</span>
-            <a href="/watchlist" className="text-blue-300 hover:text-white transition-colors">Watchlist</a>
-          </div>
           <p className="text-slate-300 text-lg max-w-xl mx-auto">
             Enter any Indian market sector and get the top 3 NSE/BSE stocks with smart allocation — generated live by AI.
           </p>

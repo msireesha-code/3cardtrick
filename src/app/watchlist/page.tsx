@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getUserId } from "@/lib/session";
+
 import { getPreviousClose } from "@/lib/polygon";
 import sql from "@/lib/db";
 
@@ -41,11 +42,6 @@ export default async function WatchlistPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white py-12 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-4 text-sm">
-            <Link href="/" className="text-blue-300 hover:text-white transition-colors">← Home</Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-300">Watchlist</span>
-          </div>
           <h1 className="text-3xl font-extrabold mb-1">Watchlist</h1>
           <p className="text-slate-300">{items.length} stocks being tracked</p>
         </div>

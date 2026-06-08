@@ -3,12 +3,16 @@ export interface Stock {
   why: string;
   risks: string;
   investor: string;
+  confidence?: number;          // 0–100
+  timeHorizon?: string;         // "Short (1–2yr)" | "Medium (3–5yr)" | "Long (5yr+)"
+  catalysts?: string[];         // 2–3 near-term catalysts
 }
 
 export interface DomainData {
   title: string;
   stocks: Stock[];
   allocation: [string, string][];
+  ragEnriched?: boolean;
 }
 
 export const stockDatabase: Record<string, DomainData> = {

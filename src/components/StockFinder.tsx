@@ -144,11 +144,19 @@ export default function StockFinder() {
         {/* Results */}
         {result && !loading && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="text-2xl font-bold text-slate-800">{result.title}</h2>
-              <span className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                3S Report · {searched}
-              </span>
+              <div className="flex items-center gap-2">
+                {result.ragEnriched && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    SEC Filing Context
+                  </span>
+                )}
+                <span className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-medium">
+                  3S Report · {searched}
+                </span>
+              </div>
             </div>
 
             <div className="grid gap-4">

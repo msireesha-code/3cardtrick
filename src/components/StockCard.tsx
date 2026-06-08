@@ -16,10 +16,18 @@ function confidenceColor(score: number) {
   return { bar: "bg-red-400", text: "text-red-500", label: "Low" };
 }
 
+function sentimentStyle(label: string) {
+  if (label === "Bullish") return { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", dot: "bg-emerald-500" };
+  if (label === "Bearish") return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500" };
+  return { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-400" };
+}
+
 export default function StockCard({ stock, index }: StockCardProps) {
   const badgeClass = investorTypeColors[stock.investor] ?? "bg-gray-100 text-gray-800";
   const conf = stock.confidence ?? null;
   const confStyle = conf !== null ? confidenceColor(conf) : null;
+  const f = stock.fundamentals;
+  const s = stock.sentiment;
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:shadow-xl transition-shadow duration-300">
@@ -30,6 +38,9 @@ export default function StockCard({ stock, index }: StockCardProps) {
             {rankLabels[index]}
           </span>
           <h3 className="text-xl font-bold text-slate-800 mt-1">{stock.name}</h3>
+          {stock.ticker && (
+            <span className="text-xs font-mono text-slate-400 mt-0.5 block">{stock.ticker}</span>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <span className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${badgeClass}`}>
@@ -37,6 +48,16 @@ export default function StockCard({ stock, index }: StockCardProps) {
           </span>
           {stock.timeHorizon && (
             <span className="text-xs text-slate-400 font-medium">{stock.timeHorizon}</span>
+          )}
+          {f?.currentPrice && (
+            <div className="text-right">
+              <span className="text-sm font-bold text-slate-700">₹{f.currentPrice.toFixed(0)}</span>
+              {f.dayChange !== null && (
+                <span className={`ml-1.5 text-xs font-semibold ${f.dayChange >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                  {f.dayChange >= 0 ? "+" : ""}{f.dayChange}%
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -94,14 +115,59 @@ export default function StockCard({ stock, index }: StockCardProps) {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Near-term Catalysts</p>
           <div className="flex flex-wrap gap-1.5">
             {stock.catalysts.map((c, i) => (
-              <span
-                key={i}
-                className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-100"
-              >
+              <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-100">
                 {c}
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Fundamentals */}
+      {f && (f.marketCap || f.pe || f.week52High) && (
+        <div className="border-t border-slate-100 pt-3 mt-3">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Fundamentals</p>
+          <div className="grid grid-cols-3 gap-2">
+            {f.marketCap && (
+              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
+                <p className="text-xs text-slate-400">Mkt Cap</p>
+                <p className="text-xs font-bold text-slate-700">{f.marketCap}</p>
+              </div>
+            )}
+            {f.pe && (
+              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
+                <p className="text-xs text-slate-400">P/E</p>
+                <p className="text-xs font-bold text-slate-700">{f.pe}x</p>
+              </div>
+            )}
+            {f.week52High && f.week52Low && (
+              <div className="bg-slate-50 rounded-lg px-2.5 py-1.5 text-center">
+                <p className="text-xs text-slate-400">52W Range</p>
+                <p className="text-xs font-bold text-slate-700">
+                  {f.week52Low.toFixed(0)}–{f.week52High.toFixed(0)}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* News sentiment */}
+      {s && (
+        <div className="border-t border-slate-100 pt-3 mt-3">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">News Sentiment</p>
+          {(() => {
+            const ss = sentimentStyle(s.label);
+            return (
+              <div className={`flex items-start gap-2 rounded-xl px-3 py-2 border ${ss.bg} ${ss.border}`}>
+                <span className={`mt-1 w-2 h-2 rounded-full shrink-0 ${ss.dot}`} />
+                <div>
+                  <span className={`text-xs font-bold ${ss.text}`}>{s.label}</span>
+                  <p className="text-xs text-slate-500 mt-0.5">{s.summary}</p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

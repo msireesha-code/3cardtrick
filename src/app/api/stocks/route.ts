@@ -3,6 +3,7 @@ import sql from "@/lib/db";
 import { resolveTicker } from "@/lib/polygon";
 import { getStackUserId } from "@/lib/stack";
 import { retrieveChunks } from "@/lib/edgar";
+import { getFundamentals, getNewsSentiment } from "@/lib/marketData";
 
 const SYSTEM_PROMPT = `You are a senior SEBI-registered equity analyst focused exclusively on the Indian stock market (NSE and BSE listed companies). When given a market domain or sector, return exactly 3 Indian stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
 {
@@ -135,6 +136,26 @@ export async function POST(req: NextRequest) {
       // fall back to first pass
     }
   }
+
+  // Enrich each stock with fundamentals + news sentiment in parallel
+  const enriched = await Promise.all(
+    (parsed.stocks ?? []).map(async (stock: { name: string; ticker?: string; [key: string]: unknown }) => {
+      const yahooTicker = stock.ticker
+        ? (stock.ticker.includes(".") ? stock.ticker : `${stock.ticker}.NS`)
+        : await resolveTicker(stock.name).catch(() => null);
+
+      const [fundamentals, sentiment] = await Promise.all([
+        yahooTicker ? getFundamentals(yahooTicker).catch(() => null) : Promise.resolve(null),
+        yahooTicker
+          ? getNewsSentiment(yahooTicker, stock.name, apiKey, model).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+
+      return { ...stock, ticker: yahooTicker, fundamentals, sentiment };
+    })
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parsed.stocks = enriched as any;
 
   const stackId = await getStackUserId();
   const userId = await resolveDbUserId(stackId);

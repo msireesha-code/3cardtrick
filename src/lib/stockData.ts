@@ -1,11 +1,26 @@
 export interface Stock {
   name: string;
+  ticker?: string;
   why: string;
   risks: string;
   investor: string;
-  confidence?: number;          // 0–100
-  timeHorizon?: string;         // "Short (1–2yr)" | "Medium (3–5yr)" | "Long (5yr+)"
-  catalysts?: string[];         // 2–3 near-term catalysts
+  confidence?: number;
+  timeHorizon?: string;
+  catalysts?: string[];
+  fundamentals?: {
+    marketCap: string | null;
+    pe: string | null;
+    week52High: number | null;
+    week52Low: number | null;
+    sector: string | null;
+    currentPrice: number | null;
+    dayChange: number | null;
+  } | null;
+  sentiment?: {
+    score: number;
+    label: "Bullish" | "Neutral" | "Bearish";
+    summary: string;
+  } | null;
 }
 
 export interface DomainData {

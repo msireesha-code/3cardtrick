@@ -13,7 +13,7 @@ const SUGGESTED_DOMAINS = [
   "FMCG", "Infrastructure", "Textiles",
 ];
 
-export default function StockFinder() {
+export default function StockFinder({ preloadQuery }: { preloadQuery?: string } = {}) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<DomainData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ export default function StockFinder() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const q = searchParams.get("q");
+    const q = searchParams.get("q") ?? preloadQuery;
     if (q && q !== searched) { setInput(q); search(q); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

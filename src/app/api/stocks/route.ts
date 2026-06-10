@@ -4,6 +4,7 @@ import { resolveTicker } from "@/lib/polygon";
 import { getStackUserId } from "@/lib/stack";
 import { retrieveChunks } from "@/lib/edgar";
 import { getFundamentals, getNewsSentiment } from "@/lib/marketData";
+import { getCached, setCached } from "@/lib/cache";
 
 const SYSTEM_PROMPT = `You are a senior SEBI-registered equity analyst focused exclusively on the Indian stock market (NSE and BSE listed companies). When given a market domain or sector, return exactly 3 Indian stock recommendations as JSON. No markdown, no explanation — only valid JSON matching this exact shape:
 {
@@ -64,7 +65,7 @@ async function persistSearch(
   picks: { name: string; why: string; risks: string; investor: string }[],
   allocation: [string, string][],
   resultJson: unknown
-): Promise<string | null> {
+): Promise<{ shareId: string; pickIds: number[] } | null> {
   try {
     const { nanoid } = await import("nanoid");
     const shareId = nanoid(10);
@@ -74,21 +75,26 @@ async function persistSearch(
       RETURNING id, share_id
     `;
     const searchId = search.id;
+    const pickIds: number[] = [];
     for (let i = 0; i < picks.length; i++) {
       const p = picks[i];
       const allocPct = parseInt(allocation[i]?.[1] ?? "0");
       const ticker = await resolveTicker(p.name).catch(() => null);
-      await sql`
+      const [pick] = await sql`
         INSERT INTO picks (search_id, stock_name, ticker, why, risks, investor_type, allocation_pct)
         VALUES (${searchId}, ${p.name}, ${ticker}, ${p.why}, ${p.risks}, ${p.investor}, ${allocPct})
+        RETURNING id
       `;
+      pickIds.push(pick.id as number);
     }
-    return shareId;
+    return { shareId, pickIds };
   } catch (err) {
     console.error("Failed to persist search:", err);
     return null;
   }
 }
+
+type PersistResult = { shareId: string; pickIds: number[] } | null;
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -105,6 +111,10 @@ export async function POST(req: NextRequest) {
   if (!domain || typeof domain !== "string") {
     return NextResponse.json({ error: "domain is required" }, { status: 400 });
   }
+
+  // Return cached result if available (skips LLM + enrichment entirely)
+  const cached = await getCached(domain);
+  if (cached) return NextResponse.json(cached);
 
   // Step 1 — get stock names with a fast first pass
   const firstPassContent = await callLLM(apiKey, model, [
@@ -166,7 +176,16 @@ export async function POST(req: NextRequest) {
 
   const { getOrCreateUserId } = await import("@/lib/session");
   const userId = await getOrCreateUserId().catch(() => null);
-  const shareId = await persistSearch(domain, userId, parsed.stocks ?? [], parsed.allocation ?? [], parsed);
+  const persist = await persistSearch(domain, userId, parsed.stocks ?? [], parsed.allocation ?? [], parsed) as PersistResult;
 
-  return NextResponse.json({ ...parsed, shareId });
+  // Attach pickId to each stock for client-side feedback
+  const stocksWithPickIds = (parsed.stocks ?? []).map((s, i) => ({
+    ...s,
+    pickId: persist?.pickIds?.[i] ?? null,
+  }));
+
+  const response = { ...parsed, stocks: stocksWithPickIds, shareId: persist?.shareId ?? null };
+  // Cache the result (pickIds excluded — they're user-specific)
+  await setCached(domain, { ...parsed, stocks: stocksWithPickIds.map(s => ({ ...s, pickId: null })), shareId: persist?.shareId ?? null });
+  return NextResponse.json(response);
 }

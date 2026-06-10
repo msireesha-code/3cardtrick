@@ -7,6 +7,7 @@ export interface Stock {
   confidence?: number;
   timeHorizon?: string;
   catalysts?: string[];
+  pickId?: number | null;
   fundamentals?: {
     currentPrice: number | null;
     dayChange: number | null;

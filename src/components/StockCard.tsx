@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Stock, investorTypeColors } from "@/lib/stockData";
+import FeedbackButtons from "./FeedbackButtons";
 
 interface StockCardProps {
   stock: Stock;
@@ -230,6 +231,12 @@ export default function StockCard({ stock, index }: StockCardProps) {
           {actionMsg && (
             <span className="text-xs text-indigo-600 font-medium animate-pulse">{actionMsg}</span>
           )}
+        </div>
+      )}
+      {/* Feedback */}
+      {stock.pickId && (
+        <div className="border-t border-slate-100 pt-3 mt-3">
+          <FeedbackButtons pickId={stock.pickId} />
         </div>
       )}
     </div>

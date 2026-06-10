@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { stackEnabled, stackServerApp } from "@/lib/stack";
 import TopNav from "@/components/TopNav";
+import DisclaimerBanner from "@/components/DisclaimerBanner";
+import PostHogProvider from "@/components/PostHogProvider";
+import { Suspense } from "react";
+import PostHogPageView from "@/components/PostHogPageView";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,35 +19,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "3S Stock Finder",
-  description: "Enter a market domain and get the top 3 stocks with a smart allocation strategy.",
+  title: "3S Stock Finder — AI-powered NSE/BSE Stock Picks",
+  description: "Enter any Indian market sector and get the top 3 NSE/BSE stocks with smart allocation — generated live by AI.",
 };
 
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const body = (
+    <body className="min-h-full flex flex-col">
+      <DisclaimerBanner />
+      <TopNav />
+      <Suspense>
+        <PostHogPageView />
+      </Suspense>
+      {children}
+    </body>
+  );
+
   if (stackEnabled && stackServerApp) {
     const { StackProvider, StackTheme } = await import("@stackframe/stack");
     return (
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-        <body className="min-h-full flex flex-col">
+        <PostHogProvider>
           <StackProvider app={stackServerApp}>
-            <StackTheme>
-              <TopNav />
-              {children}
-            </StackTheme>
+            <StackTheme>{body}</StackTheme>
           </StackProvider>
-        </body>
+        </PostHogProvider>
       </html>
     );
   }
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <TopNav />
-        {children}
-      </body>
+      <PostHogProvider>
+        {body}
+      </PostHogProvider>
     </html>
   );
 }

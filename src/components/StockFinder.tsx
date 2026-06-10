@@ -27,9 +27,9 @@ export default function StockFinder() {
 
   useEffect(() => {
     const q = searchParams.get("q");
-    if (q) { setInput(q); search(q); }
+    if (q && q !== searched) { setInput(q); search(q); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   async function search(domain: string) {
     const trimmed = domain.trim();

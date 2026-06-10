@@ -29,6 +29,7 @@ export interface DomainData {
   stocks: Stock[];
   allocation: [string, string][];
   ragEnriched?: boolean;
+  shareId?: string;
 }
 
 export const stockDatabase: Record<string, DomainData> = {

@@ -62,11 +62,16 @@ async function persistSearch(
   domain: string,
   userId: number | null,
   picks: { name: string; why: string; risks: string; investor: string }[],
-  allocation: [string, string][]
-) {
+  allocation: [string, string][],
+  resultJson: unknown
+): Promise<string | null> {
   try {
+    const { nanoid } = await import("nanoid");
+    const shareId = nanoid(10);
     const [search] = await sql`
-      INSERT INTO searches (user_id, domain) VALUES (${userId}, ${domain}) RETURNING id
+      INSERT INTO searches (user_id, domain, share_id, result_json)
+      VALUES (${userId}, ${domain}, ${shareId}, ${JSON.stringify(resultJson)})
+      RETURNING id, share_id
     `;
     const searchId = search.id;
     for (let i = 0; i < picks.length; i++) {
@@ -78,8 +83,10 @@ async function persistSearch(
         VALUES (${searchId}, ${p.name}, ${ticker}, ${p.why}, ${p.risks}, ${p.investor}, ${allocPct})
       `;
     }
+    return shareId;
   } catch (err) {
     console.error("Failed to persist search:", err);
+    return null;
   }
 }
 
@@ -157,9 +164,9 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parsed.stocks = enriched as any;
 
-  const stackId = await getStackUserId();
-  const userId = await resolveDbUserId(stackId);
-  persistSearch(domain, userId, parsed.stocks ?? [], parsed.allocation ?? []);
+  const { getOrCreateUserId } = await import("@/lib/session");
+  const userId = await getOrCreateUserId().catch(() => null);
+  const shareId = await persistSearch(domain, userId, parsed.stocks ?? [], parsed.allocation ?? [], parsed);
 
-  return NextResponse.json(parsed);
+  return NextResponse.json({ ...parsed, shareId });
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DomainData } from "@/lib/stockData";
 import StockCard from "./StockCard";
 import AllocationBar from "./AllocationBar";
+import ShareButtons from "./ShareButtons";
 
 const SUGGESTED_DOMAINS = [
   "Defense", "Pharma", "Fintech", "EV",
@@ -181,7 +182,7 @@ export default function StockFinder() {
                 {result.ragEnriched && (
                   <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    SEC Filing Context
+                    Filing Context
                   </span>
                 )}
                 <span className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-medium">
@@ -189,6 +190,11 @@ export default function StockFinder() {
                 </span>
               </div>
             </div>
+            {result.shareId && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <ShareButtons shareId={result.shareId} domain={searched} />
+              </div>
+            )}
 
             <div className="grid gap-4">
               {result.stocks.map((stock, i) => (

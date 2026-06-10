@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getUserId } from "@/lib/session";
-
 import { getPreviousClose } from "@/lib/polygon";
 import sql from "@/lib/db";
+import AlertForm from "@/components/AlertForm";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +60,7 @@ export default async function WatchlistPage() {
         ) : (
           <div className="space-y-3">
             {items.map((item) => (
-              <div key={item.ticker} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+              <div key={item.ticker} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between gap-4 flex-wrap">
                 <div>
                   <p className="font-semibold text-slate-800">{item.stock_name}</p>
                   <span className="font-mono text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{item.ticker}</span>
@@ -82,28 +82,5 @@ export default async function WatchlistPage() {
         )}
       </div>
     </div>
-  );
-}
-
-function AlertForm({ ticker, stockName }: { ticker: string; stockName: string }) {
-  return (
-    <form action="/api/alerts" method="POST" className="flex items-center gap-2">
-      <input type="hidden" name="ticker" value={ticker} />
-      <input type="hidden" name="stockName" value={stockName} />
-      <input
-        type="number"
-        name="targetPrice"
-        placeholder="₹ target"
-        className="w-24 text-sm border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        step="0.01"
-      />
-      <select name="direction" className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-        <option value="above">Above</option>
-        <option value="below">Below</option>
-      </select>
-      <button type="submit" className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-        Set Alert
-      </button>
-    </form>
   );
 }

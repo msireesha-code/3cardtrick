@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getUserId } from "@/lib/session";
+import RemoveButtonClient from "@/components/RemoveButton";
 import { getPreviousClose } from "@/lib/polygon";
 import sql from "@/lib/db";
 
@@ -127,15 +128,5 @@ export default async function PortfolioPage() {
 }
 
 function RemoveButton({ holdingId, ticker }: { holdingId: number; ticker: string }) {
-  return (
-    <form action={`/api/portfolio?ticker=${ticker}`} method="DELETE">
-      <button
-        type="submit"
-        className="text-xs text-red-400 hover:text-red-600 transition-colors"
-        title="Remove from portfolio"
-      >
-        Remove
-      </button>
-    </form>
-  );
+  return <RemoveButtonClient holdingId={holdingId} ticker={ticker} />;
 }

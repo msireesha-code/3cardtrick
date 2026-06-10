@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { DomainData } from "@/lib/stockData";
 import StockCard from "./StockCard";
 import AllocationBar from "./AllocationBar";
@@ -22,6 +23,13 @@ export default function StockFinder() {
     if (typeof window === "undefined") return [];
     try { return JSON.parse(localStorage.getItem("3s_recent") ?? "[]"); } catch { return []; }
   });
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) { setInput(q); search(q); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function search(domain: string) {
     const trimmed = domain.trim();

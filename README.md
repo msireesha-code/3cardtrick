@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 3S Stock Finder
 
-## Getting Started
+AI-powered stock discovery for the Indian market (NSE/BSE). Enter any market domain and get the top 3 stocks with allocation strategy, fundamentals, backtesting, and portfolio tracking.
 
-First, run the development server:
+**Production:** https://3cardtrick.vercel.app
+
+---
+
+## Features
+
+- **AI Stock Picks** — enter any sector/domain, get top 3 NSE/BSE stocks with allocation rationale via OpenRouter LLM
+- **Fundamentals** — P/E, market cap, revenue, debt-to-equity per stock
+- **Backtesting Engine** — historical return simulation with configurable date range
+- **News Sentiment** — recent headlines + sentiment score per stock
+- **Portfolio Tracker** — track holdings, P&L, and allocation across picks
+- **Watchlist** — save stocks for later review
+- **Price Alerts** — email notifications via Resend when a stock hits your target
+- **Search History** — persisted per user session
+- **Trending Searches** — community-level trending domains/stocks
+- **Shareable Reports** — public URL per analysis with OG image preview
+- **Embed Widget** — embeddable iframe for any stock pick
+- **Compliance / Disclaimer** — methodology and disclaimer pages
+- **SEO / Sitemap** — `sitemap.ts` auto-generates sitemap
+- **Analytics** — PostHog event tracking
+- **LLM Response Cache** — Upstash Redis caches results for 6 hours
+- **Build Progress Dashboard** — `/progress` — live YC roadmap tracker from Neon DB
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js (App Router, TypeScript) |
+| Styling | Tailwind CSS |
+| Database | Neon PostgreSQL (pooled via `DATABASE_URL`) |
+| Auth | Neon Auth (Stack Auth) — GitHub + Google SSO |
+| LLM | OpenRouter (`OPENROUTER_API_KEY` + `OPENROUTER_MODEL`) |
+| Market Data | Yahoo Finance (NSE/BSE) |
+| Email | Resend |
+| Cache | Upstash Redis |
+| Analytics | PostHog |
+| Charts | Recharts |
+| Deployment | Vercel (auto-deploy on push to `main`) |
+
+---
+
+## Routes
+
+| Route | Description |
+|---|---|
+| `/` | Main stock finder UI |
+| `/progress` | Live build progress dashboard |
+| `/portfolio` | Portfolio tracker |
+| `/watchlist` | Saved stocks |
+| `/backtest` | Backtesting engine |
+| `/trending` | Trending searches |
+| `/share/[id]` | Shareable report page |
+| `/sector/[slug]` | Sector-level view |
+| `/widget` | Embeddable widget |
+| `/methodology` | How the AI picks work |
+| `/disclaimer` | Compliance page |
+| `/sign-in`, `/sign-up` | Auth pages |
+| `/api/stocks` | `POST {domain}` → OpenRouter → stock picks |
+| `/api/progress` | `GET` → aggregated build stats from Neon |
+| `/api/alerts` | Price alert CRUD |
+
+---
+
+## Local Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy env template and fill in keys
+cp .env.example .env.local
+
+# Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Required environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+DATABASE_URL              # Neon PostgreSQL (pooled)
+DATABASE_URL_UNPOOLED     # Neon PostgreSQL (direct)
+OPENROUTER_API_KEY        # LLM calls
+OPENROUTER_MODEL          # e.g. openai/gpt-4o-mini
+NEXT_PUBLIC_STACK_PROJECT_ID       # Neon Auth
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY
+STACK_SECRET_SERVER_KEY
+CRON_SECRET               # Vercel cron auth
+RESEND_API_KEY            # Price alert emails
+NEXT_PUBLIC_POSTHOG_KEY   # Analytics
+NEXT_PUBLIC_POSTHOG_HOST
+UPSTASH_REDIS_REST_URL    # LLM response cache
+UPSTASH_REDIS_REST_TOKEN
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercel auto-deploys every push to `main`. GitHub Actions workflow (`.github/workflows/`) handles CI.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To deploy manually:
 
-## Deploy on Vercel
+```bash
+vercel --prod
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Repository
+
+- GitHub: https://github.com/msireesha-code/3cardtrick
+- Branch: `main`
